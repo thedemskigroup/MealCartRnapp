@@ -456,8 +456,11 @@ export const Strings = {
   testPlanShopping_krogerSelectModality: "Please select Delivery or Pickup",
   testPlanShopping_krogerNoItems: "No Kroger items found in this list",
   testPlanShopping_krogerSuccess: "Success",
+  // The Kroger app can keep showing a cached cart after a successful add, so
+  // the message points at kroger.com rather than letting a stale app screen
+  // read as a failed transfer.
   testPlanShopping_krogerSuccessMessage:
-    "Items have been added to your Kroger cart!",
+    "Items have been added to your Kroger cart!\n\nIf the Kroger app still shows an empty cart, open your cart at kroger.com — the app can take a while to refresh.",
   testPlanShopping_krogerError: "Error",
   testPlanShopping_krogerErrorMessage: "Failed to add items to Kroger cart",
   testPlanShopping_krogerResendTitle: "Already sent to Kroger",
@@ -473,6 +476,9 @@ export const Strings = {
   testPlanShopping_krogerAllRejected: "Kroger refused every item. It reported:",
   testPlanShopping_krogerReconnectHint:
     "Your Kroger session may have expired. Reconnect your Kroger account from Profile and try again.",
+  // Shown on a Kroger row whose recipe amount is a measurement rather than a
+  // package count, so the user can see the cart gets one package of it.
+  testPlanShopping_krogerCartQuantity: "Kroger cart:",
   testPlanShopping_meal: "meal",
   testPlanShopping_meals: "meals",
   testPlanShopping_unknownIngredient: "Unknown Ingredient",

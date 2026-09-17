@@ -16,6 +16,7 @@ import { Colors, FontFamilies } from "@/constants/Theme";
 import { useTourStep } from "@/context/TourStepContext";
 import { useAppSelector } from "@/reduxStore/hooks";
 import { addItemsToKrogerCart } from "@/services/krogerApi";
+import { krogerCartQuantity } from "@/utils/krogerQuantity";
 import { backNavigation } from "@/utils/Navigation";
 import { useShoppingListViewModel } from "@/viewmodels/ShoppingListViewModel";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
@@ -333,19 +334,25 @@ export default function TestPlanShopping() {
 
     // Kroger's cart add takes one entry per UPC. The same product can reach a
     // list from two different meals, and sending it twice in one request is
-    // rejected outright, so merge duplicates into a single line and add their
-    // quantities. Quantity also has to be a whole number of at least 1 — a
-    // recipe count of "0" or a fraction is not something a cart can hold.
-    const quantityByUpc = new Map<string, number>();
+    // rejected outright, so merge duplicates into a single line.
+    //
+    // What gets merged is *packages*, not recipe amounts — see
+    // krogerCartQuantity. A measured amount ("3 tablespoon") is always one
+    // package however large the amount, and two meals both using olive oil
+    // still need one bottle, so only counted packages ("2 can") add up.
+    const packagesByUpc = new Map<string, number>();
     allIngredients.forEach((ing: any, idx: number) => {
       if (!isSelectedKroger(ing, idx)) return;
       const upc = String(ing.krogerIngredientId);
-      const quantity = Math.max(1, Math.round(Number(ing.count) || 1));
-      quantityByUpc.set(upc, (quantityByUpc.get(upc) || 0) + quantity);
+      const { quantity, countsPackages } = krogerCartQuantity(ing);
+      if (!packagesByUpc.has(upc)) packagesByUpc.set(upc, 0);
+      if (countsPackages) {
+        packagesByUpc.set(upc, (packagesByUpc.get(upc) || 0) + quantity);
+      }
     });
 
-    const krogerItems = [...quantityByUpc.entries()].map(([upc, quantity]) => ({
-      quantity,
+    const krogerItems = [...packagesByUpc.entries()].map(([upc, packages]) => ({
+      quantity: Math.max(1, packages),
       upc,
       modality: krogerModality,
     }));
@@ -513,6 +520,16 @@ export default function TestPlanShopping() {
     const itemId = `${item.ingredientId}-${item.mealId}-${index}`;
     const isChecked = checked.includes(itemId);
 
+    // The row shows the recipe amount, which is not what the cart receives: a
+    // measured amount buys one package of the product. Say so on the row rather
+    // than letting "3 tablespoon" imply three of something arrives.
+    const isKrogerItem = item.isKroger && item.krogerIngredientId;
+    const cartQuantity = krogerCartQuantity(item);
+    const showCartQuantity =
+      isKrogerItem &&
+      (!cartQuantity.countsPackages ||
+        cartQuantity.quantity !== Number(item.count));
+
     // Check if this is the first item in its category
     const showCategoryHeader =
       index === 0 ||
@@ -559,6 +576,11 @@ export default function TestPlanShopping() {
                 {item.unit || Strings.testPlanShopping_noUnit}
                 {item.mealName ? ` (${item.mealName})` : ""}
               </Text>
+              {showCartQuantity && (
+                <Text style={styles.cartQuantity} numberOfLines={1}>
+                  {`${Strings.testPlanShopping_krogerCartQuantity} ${cartQuantity.quantity}`}
+                </Text>
+              )}
             </View>
           </View>
         </TouchableOpacity>
@@ -940,6 +962,12 @@ const styles = StyleSheet.create({
     fontFamily: FontFamilies.ROBOTO_REGULAR,
     fontSize: moderateScale(10),
     color: Colors.primary,
+    marginTop: moderateScale(2),
+  },
+  cartQuantity: {
+    fontFamily: FontFamilies.ROBOTO_REGULAR,
+    fontSize: moderateScale(10),
+    color: Colors.tertiary,
     marginTop: moderateScale(2),
   },
   progressbar: {
