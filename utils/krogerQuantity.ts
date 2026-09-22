@@ -1,25 +1,34 @@
 /**
- * Turns a recipe amount into a Kroger cart quantity.
+ * Turns a shopping-list row into a Kroger cart quantity.
  *
- * These are two different things, and conflating them is how a 29-item
- * shopping list became a 39-item Kroger cart. A recipe amount measures how much
- * of an ingredient the cooking uses ("3 tablespoon olive oil", "3 piece chicken
- * breast"); a cart quantity counts *retail packages* ("1 bottle", "1 pack").
- * Sending the recipe count as the quantity ordered three bottles of oil and
- * three packs of chicken.
+ * A cart quantity counts **retail packages**. A row's `count` sometimes means
+ * that and sometimes does not, and the only thing that tells them apart is the
+ * shape of `unit`:
  *
- * We cannot convert between the two — that needs the product's package size in
- * the same dimension as the recipe unit ("16 fl oz" vs tablespoons), and the
- * shopping-list ingredient carries only one `unit` string, which is the recipe
- * unit for the premade catalog and the Kroger size for meals built in the app.
- * So the rule is deliberately conservative: **one package**, unless the unit
- * itself names a package the user is counting out ("2 can", "3 package"), in
- * which case the count is what they meant.
+ * - `unit` is the linked Kroger product's own size ("16 fl oz", "250 ml",
+ *   "12 ct") — then the row *is* that product and `count` counts packages.
+ *   "2 × 16 fl oz olive oil" is two bottles. Meals built in the app always land
+ *   here: `CreateMealBottomSheet` writes `meta.size` straight into `unit`.
+ * - `unit` names a package the user is counting out ("2 can", "3 package") —
+ *   `count` counts packages.
+ * - `unit` is a bare recipe measure ("3 tablespoon", "3 piece", "8 oz") — then
+ *   `count` measures how much the cooking uses and says nothing about how many
+ *   packages to buy. One package covers it. The premade catalog is full of
+ *   these, and sending the count is what once ordered three bottles of olive
+ *   oil and three packs of chicken breast for a single recipe.
  *
- * Under-buying is the safe side of this trade. One bottle short of oil is a
- * mistake the user can fix with one tap in Kroger; three unwanted bottles cost
- * them money and have to be removed one at a time — and Kroger's v1 API has no
- * remove endpoint, so Meal Cart cannot undo it for them.
+ * Note the asymmetry between a *size* and a bare *measure*: "16 fl oz" leads
+ * with a number because it describes one container, while "oz" on its own is a
+ * unit of measurement being counted by `count`. That is why a leading digit
+ * means package and a bare measurement word does not.
+ *
+ * What we cannot do is convert between the two — "3 tablespoon" against a
+ * 16 fl oz bottle needs the package size in the same dimension as the recipe
+ * unit, and a row carries a single `unit` string that is one or the other,
+ * never both. So the measured case rounds to one package, and under-buying is
+ * the deliberate safe side: a bottle short is one tap to fix in Kroger, while
+ * surplus bottles cost money and cannot be removed by the app at all (the v1
+ * cart API has no remove endpoint).
  */
 
 /**
@@ -54,15 +63,16 @@ const normalizeUnit = (unit: unknown) =>
     .trim();
 
 /**
- * True when the unit counts whole packages ("can", "2 packages").
- *
- * A unit that *starts* with a number is a size, not a count — "250 ml",
- * "1 Litre" and the Kroger sizes we store verbatim ("16 fl oz", "12 ct") all
- * describe one package, however many of something it holds.
+ * True when the unit describes a package — either a product size the row is
+ * counting ("16 fl oz") or a package noun ("bottle").
  */
 export const isPackageUnit = (unit: unknown): boolean => {
   const normalized = normalizeUnit(unit);
-  if (!normalized || /^[\d.]/.test(normalized)) return false;
+  if (!normalized) return false;
+
+  // A size leads with its number ("16 fl oz", "1 kg", "12 ct"): it names one
+  // container, so `count` is how many of them to buy.
+  if (/^[\d.]/.test(normalized)) return true;
 
   return normalized
     .split(/[^a-z]+/)
@@ -76,17 +86,26 @@ export const isPackageUnit = (unit: unknown): boolean => {
 
 /**
  * How many packages of this ingredient to put in the cart, and whether that
- * number came from the user counting packages.
+ * number came from the row counting packages.
  *
- * `countsPackages` is false for every measured amount, which is what lets a
+ * `countsPackages` is false only for measured amounts, which is what lets a
  * caller merge the same product across two meals without adding the amounts
  * together: two recipes each using some olive oil still need one bottle.
  */
 export const krogerCartQuantity = (ingredient: {
   count?: unknown;
   unit?: unknown;
+  krogerUnit?: unknown;
 }): { quantity: number; countsPackages: boolean } => {
-  if (!isPackageUnit(ingredient?.unit)) {
+  const unit = normalizeUnit(ingredient?.unit);
+  const krogerUnit = normalizeUnit(ingredient?.krogerUnit);
+
+  // The unit is verbatim the linked product's size, so the row counts that
+  // product. This is the exact signal rather than the shape heuristic below,
+  // and it holds even for a size we would not otherwise recognise.
+  const namesTheProduct = !!krogerUnit && unit === krogerUnit;
+
+  if (!namesTheProduct && !isPackageUnit(unit)) {
     return { quantity: 1, countsPackages: false };
   }
 

@@ -155,6 +155,11 @@ export default function TestPlanShopping() {
     deselected: !flags.selected,
     isKroger: ing.isKroger || false,
     krogerIngredientId: ing.krogerIngredientId || "",
+    // The Kroger product's own size string. Kept because it is what tells
+    // krogerCartQuantity that this row counts *that product* ("2 x 16 fl oz"
+    // is two bottles) rather than measuring an amount. Dropping it here sent
+    // the signal to the bottom of a well on the first selection save.
+    krogerUnit: ing.krogerUnit || "",
   });
 
   // Refs so the blur handler writes the latest values instead of whatever was
