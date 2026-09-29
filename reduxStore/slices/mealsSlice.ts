@@ -108,6 +108,9 @@ const saveMealIngredientsToSubcollection = async (
           ingredientData.isKroger = true;
           ingredientData.krogerIngredientId = ing.krogerIngredientId || "";
           ingredientData.category = ing.category || "";
+          // The product's package size ("16 fl oz"). Kept apart from `unit`,
+          // which is the recipe amount's unit; the shopping screen shows both.
+          ingredientData.krogerUnit = ing.krogerUnit || "";
         } else {
           ingredientData.categoryId = ing.categoryId || ing.category || "";
         }
@@ -294,6 +297,7 @@ export const enrichMealsWithIngredients = async (
                 count: subDoc.count || "0",
                 ingredientName: subDoc.name || "",
                 unit: subDoc.unit || "",
+                krogerUnit: subDoc.krogerUnit || "",
                 categoryName: subDoc.category || "",
               };
             }
@@ -679,6 +683,9 @@ const updateMealIngredientsSubcollection = async (
           ingredientData.isKroger = true;
           ingredientData.krogerIngredientId = ing.krogerIngredientId || "";
           ingredientData.category = ing.category || "";
+          // The product's package size ("16 fl oz"). Kept apart from `unit`,
+          // which is the recipe amount's unit; the shopping screen shows both.
+          ingredientData.krogerUnit = ing.krogerUnit || "";
         } else {
           ingredientData.categoryId = ing.categoryId || ing.category || "";
         }

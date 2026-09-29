@@ -475,6 +475,7 @@ const AddItemToList = ({
       mealName: "",
       isKroger: true,
       krogerIngredientId: meta.productId || meta.upc || "",
+      krogerUnit: meta.size || "",
     };
 
     setManualKrogerItems((prev) => [
@@ -587,6 +588,7 @@ const AddItemToList = ({
         mealName: ingredient.mealName || "",
         isKroger,
         krogerIngredientId: ingredient.krogerIngredientId || "",
+        krogerUnit: ingredient.krogerUnit || "",
       };
     });
 

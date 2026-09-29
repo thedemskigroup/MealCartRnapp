@@ -526,14 +526,21 @@ export default function TestPlanShopping() {
     const isChecked = checked.includes(itemId);
 
     // The row shows the recipe amount, which is not what the cart receives: a
-    // measured amount buys one package of the product. Say so on the row rather
-    // than letting "3 tablespoon" imply three of something arrives.
+    // measured amount buys one package of the product. Say so on the row, in
+    // grocery terms ("1 x 16 fl oz") when the product size is known, rather
+    // than letting "4 tablespoon" imply four of something arrives.
     const isKrogerItem = item.isKroger && item.krogerIngredientId;
     const cartQuantity = krogerCartQuantity(item);
+    const packageSize =
+      item.krogerUnit && item.krogerUnit !== item.unit ? item.krogerUnit : "";
     const showCartQuantity =
       isKrogerItem &&
-      (!cartQuantity.countsPackages ||
+      (!!packageSize ||
+        !cartQuantity.countsPackages ||
         cartQuantity.quantity !== Number(item.count));
+    const cartQuantityLabel = packageSize
+      ? `${cartQuantity.quantity} \u00d7 ${packageSize}`
+      : String(cartQuantity.quantity);
 
     // Check if this is the first item in its category
     const showCategoryHeader =
@@ -583,7 +590,7 @@ export default function TestPlanShopping() {
               </Text>
               {showCartQuantity && (
                 <Text style={styles.cartQuantity} numberOfLines={1}>
-                  {`${Strings.testPlanShopping_krogerCartQuantity} ${cartQuantity.quantity}`}
+                  {`${Strings.testPlanShopping_krogerCartQuantity} ${cartQuantityLabel}`}
                 </Text>
               )}
             </View>

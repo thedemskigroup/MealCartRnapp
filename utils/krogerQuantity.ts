@@ -91,21 +91,18 @@ export const isPackageUnit = (unit: unknown): boolean => {
  * `countsPackages` is false only for measured amounts, which is what lets a
  * caller merge the same product across two meals without adding the amounts
  * together: two recipes each using some olive oil still need one bottle.
+ *
+ * Only `unit` is consulted. A row may also carry `krogerUnit` (the linked
+ * product's size, for display), but it must not influence the quantity: it
+ * used to be back-filled from `unit` whenever the real size was missing, so
+ * "unit equals krogerUnit" held for every row and a shortcut built on it sent
+ * every recipe count verbatim — four tablespoons of oil became four bottles.
  */
 export const krogerCartQuantity = (ingredient: {
   count?: unknown;
   unit?: unknown;
-  krogerUnit?: unknown;
 }): { quantity: number; countsPackages: boolean } => {
-  const unit = normalizeUnit(ingredient?.unit);
-  const krogerUnit = normalizeUnit(ingredient?.krogerUnit);
-
-  // The unit is verbatim the linked product's size, so the row counts that
-  // product. This is the exact signal rather than the shape heuristic below,
-  // and it holds even for a size we would not otherwise recognise.
-  const namesTheProduct = !!krogerUnit && unit === krogerUnit;
-
-  if (!namesTheProduct && !isPackageUnit(unit)) {
+  if (!isPackageUnit(ingredient?.unit)) {
     return { quantity: 1, countsPackages: false };
   }
 

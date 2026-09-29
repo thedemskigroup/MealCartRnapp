@@ -255,7 +255,9 @@ const CreateMealBottomSheet = ({
               krogerIngredientId: ing.krogerIngredientId || "",
               krogerCategoryName:
                 ing.krogerCategoryName || ing.categoryName || ing.category || "",
-              krogerUnit: ing.krogerUnit || ing.unit || "",
+              // Product size or empty — never the recipe unit (see
+              // krogerCartQuantity for why the two must stay distinct).
+              krogerUnit: ing.krogerUnit || "",
             };
           }
 
@@ -820,8 +822,7 @@ const CreateMealBottomSheet = ({
             // Persist the original Kroger category/unit so they remain
             // selectable when the meal is edited later.
             krogerCategoryName,
-            krogerUnit:
-              ing.krogerUnit || ing.krogerMeta?.size || ing.unit || "",
+            krogerUnit: ing.krogerUnit || ing.krogerMeta?.size || "",
           };
           return ingredient;
         }

@@ -383,14 +383,12 @@ const CreateNewListBottomSheet = forwardRef<
 
         const mappedIngredients = selectedIngredients.map((ingredient) => {
           const isKroger = ingredient.isKroger || false;
-          // Kroger items use their own Kroger unit; normal items use the
-          // user-selected unit.
-          const unit = isKroger
-            ? ingredient.krogerUnit ||
-              ingredient.selectedUnit ||
-              ingredient.unit ||
-              ""
-            : ingredient.selectedUnit || ingredient.unit || "";
+          // `unit` is the recipe amount's unit as the user set it, for every
+          // row. It used to be replaced by the Kroger product size on Kroger
+          // rows, which turned "4 tablespoon" into "4 x 16 fl oz" — and four
+          // bottles in the cart. The product size travels separately as
+          // krogerUnit, for display only.
+          const unit = ingredient.selectedUnit || ingredient.unit || "";
 
           return {
             ingredientId: ingredient.ingredientId || "",
@@ -411,7 +409,10 @@ const CreateNewListBottomSheet = forwardRef<
             krogerIngredientId: ingredient.krogerIngredientId || "",
             krogerCategoryName:
               ingredient.krogerCategoryName || ingredient.categoryName || "",
-            krogerUnit: ingredient.krogerUnit || ingredient.unit || "",
+            // The product's own size, or empty when unknown — never the recipe
+            // unit. Back-filling it from `unit` made the two indistinguishable
+            // and let a recipe count be sent as a package count.
+            krogerUnit: ingredient.krogerUnit || "",
           };
         });
 
