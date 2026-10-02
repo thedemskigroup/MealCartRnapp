@@ -80,7 +80,7 @@ const tourSteps = [
   {
     title: "And It’s Done",
     subTitle:
-      "Slot will look like this when you add you meal. You can remove or replace it anytime.",
+      "Slot will look like this when you add your meal. You can remove or replace it anytime.",
     secondaryText: "Back",
     primaryText: "Skip Tour",
     tertiaryText: "Next",
