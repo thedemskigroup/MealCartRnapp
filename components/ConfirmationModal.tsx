@@ -157,7 +157,11 @@ const styles = StyleSheet.create({
     fontFamily: FontFamilies.ROBOTO_MEDIUM,
   },
   disabled: {
-    opacity: 0.9,
+    // The confirm button is now disabled for as long as the action runs (the
+    // modal stays up instead of handing over to a separate loading modal), so
+    // this has to actually read as disabled rather than being a 10% dimming
+    // nobody can see.
+    opacity: 0.5,
   },
   active: {
     opacity: 1,

@@ -19,7 +19,7 @@ import { FontFamily, fontSize } from "@/utils/Fonts";
 import { pushNavigation } from "@/utils/Navigation";
 import { showErrorToast, showSuccessToast } from "@/utils/Toast";
 import { useMealsViewModel } from "@/viewmodels/MealsViewModel";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   Image,
@@ -31,11 +31,16 @@ import {
 } from "react-native";
 import AppImage from "./AppImage";
 import ConfirmationModal from "./ConfirmationModal";
-import { hideLoader, showLoader } from "./Loader";
 import SendToShoppingList from "./SendShoppingList";
 import SpaceBetweenButtons from "./SpaceBetweenButtons";
 import ThemeGradientButton from "./ThemeGradientButton";
 const { width } = Dimensions.get("window");
+
+// Long enough for a transparent Modal's fade-out to finish before anything
+// else touches the presentation. Navigating or presenting a second modal
+// inside this window is what leaves an invisible touch-blocking overlay on
+// iOS (see handleDeleteMeal).
+const MODAL_DISMISS_MS = 350;
 
 type MealDetailProps = {
   meal: Meal;
@@ -44,6 +49,8 @@ type MealDetailProps = {
 
 const MealDetail = ({ meal, onBack }: MealDetailProps) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const pendingBackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showSendShoppingList, setShowSendShoppingList] = useState(false);
 
   const { deleteTheMeal } = useMealsViewModel();
@@ -66,26 +73,56 @@ const MealDetail = ({ meal, onBack }: MealDetailProps) => {
     });
   };
 
+  // Deleting used to dismiss this modal and present the global Loader in the
+  // same tick, then navigate away the moment the delete resolved. On iOS a
+  // Modal is a real view-controller presentation, so starting one transition
+  // while another is still running wedges UIKit: a transparent presented view
+  // is left in the hierarchy, the screen underneath keeps rendering normally,
+  // and every touch is swallowed until the app is force-quit. That is the
+  // "My Meals is frozen after deleting a meal" report. The same race is
+  // already documented for the FilterModal in app/(tabs)/1_Meals.tsx.
+  //
+  // So there is no second modal any more — progress is shown inside this one
+  // via `isRemoving` — and the three steps are kept apart: finish deleting,
+  // dismiss the modal, and only then navigate.
   const handleDeleteMeal = async () => {
-    setShowDeleteModal(false);
-    showLoader();
+    if (isDeleting) return;
+    setIsDeleting(true);
+
+    const finish = (onDone?: () => void) => {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+      onDone?.();
+    };
+
     try {
       await deleteTheMeal(
         meal.id,
-        (payload) => {
-          hideLoader();
-          showSuccessToast(Strings.meal_deleted);
-          onBack();
+        () => {
+          finish(() => {
+            showSuccessToast(Strings.meal_deleted);
+            // Unmounting this screen while its Modal is still dismissing wedges
+            // the presentation exactly as above, so let the fade finish first.
+            pendingBackTimer.current = setTimeout(onBack, MODAL_DISMISS_MS);
+          });
         },
         (error) => {
-          hideLoader();
-          showErrorToast(error || Strings.error_deleting_meal);
+          finish(() => showErrorToast(error || Strings.error_deleting_meal));
         },
       );
     } catch (error: any) {
-      showErrorToast(error?.message || Strings.error_occurred_deleting_meal);
+      finish(() =>
+        showErrorToast(error?.message || Strings.error_occurred_deleting_meal),
+      );
     }
   };
+
+  useEffect(
+    () => () => {
+      if (pendingBackTimer.current) clearTimeout(pendingBackTimer.current);
+    },
+    [],
+  );
 
   return (
     <View style={styles.container}>
@@ -248,8 +285,12 @@ const MealDetail = ({ meal, onBack }: MealDetailProps) => {
         description={Strings.mealDetail_deleteDesc}
         cancelText={Strings.mealDetail_cancel}
         confirmText={Strings.mealDetail_delete}
-        onCancel={() => setShowDeleteModal(false)}
+        onCancel={() => {
+          if (isDeleting) return;
+          setShowDeleteModal(false);
+        }}
         onConfirm={handleDeleteMeal}
+        isRemoving={isDeleting}
       />
       <SendToShoppingList
         visible={showSendShoppingList}
