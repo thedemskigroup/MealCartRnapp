@@ -65,8 +65,10 @@ service cloud.firestore {
     function mealOwnerUid(mealId) {
       return get(/databases/$(database)/documents/meals/$(mealId)).data.uid;
     }
+    // Same missing-field hazard as isGlobalMeal() below: default rather than
+    // read a field that may not exist.
     function mealIsGlobal(mealId) {
-      return get(/databases/$(database)/documents/meals/$(mealId)).data.isGlobal == true;
+      return get(/databases/$(database)/documents/meals/$(mealId)).data.get('isGlobal', false) == true;
     }
     function canModifyMealData(mealId) {
       return isSignedIn() &&
@@ -80,23 +82,39 @@ service cloud.firestore {
     }
 
     // ---- meals ------------------------------------------------------------
+    // Meals written before isGlobal was always set have NO isGlobal field, and
+    // reading a missing field raises an error in rules. `||` recovers from an
+    // error when the other side is true, but `&&` does not -- so
+    // `uid == auth.uid && resource.data.isGlobal != true` evaluates to an
+    // error, not false, and the request is denied. That made those documents
+    // readable (the read is an `||` chain, which recovers) but impossible to
+    // update or delete: the app showed "Missing or insufficient permissions"
+    // on a meal the user plainly owned (reported 2026-10-21; 12 of 95 meals
+    // affected, e.g. "Chips", "Cheese", several "Omlette").
+    //
+    // isGlobalMeal() reads the field with a default so a missing value means
+    // "not global" instead of erroring. Use it for every isGlobal check here.
+    function isGlobalMeal(data) {
+      return data.get('isGlobal', false) == true;
+    }
+
     match /meals/{mealId} {
       // Any signed-in user can read official/global meals; owners read theirs.
       allow read: if isSignedIn() &&
-        (resource.data.isGlobal == true ||
+        (isGlobalMeal(resource.data) ||
          resource.data.uid == request.auth.uid);
 
       // Create: your own meal, or a global meal (subject to canWriteGlobalMeal).
       allow create: if isSignedIn() &&
         ((request.resource.data.uid == request.auth.uid &&
-          request.resource.data.isGlobal != true) ||
-         (request.resource.data.isGlobal == true && canWriteGlobalMeal()));
+          !isGlobalMeal(request.resource.data)) ||
+         (isGlobalMeal(request.resource.data) && canWriteGlobalMeal()));
 
       // Update: your own meal, or a global meal (subject to the rule).
       allow update: if isSignedIn() &&
         ((resource.data.uid == request.auth.uid &&
-          resource.data.isGlobal != true) ||
-         (resource.data.isGlobal == true && canWriteGlobalMeal()));
+          !isGlobalMeal(resource.data)) ||
+         (isGlobalMeal(resource.data) && canWriteGlobalMeal()));
 
       // Delete: same ownership check, plus a null-resource allowance so that
       // re-deleting an already-removed meal (left over from a previously
@@ -104,8 +122,8 @@ service cloud.firestore {
       allow delete: if isSignedIn() &&
         (resource == null ||
          (resource.data.uid == request.auth.uid &&
-          resource.data.isGlobal != true) ||
-         (resource.data.isGlobal == true && canWriteGlobalMeal()));
+          !isGlobalMeal(resource.data)) ||
+         (isGlobalMeal(resource.data) && canWriteGlobalMeal()));
     }
 
     // ---- mealIngredients (+ ingredients subcollection) --------------------
