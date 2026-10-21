@@ -1,6 +1,6 @@
 import { Colors } from "@/constants/Theme";
 import React, { useState } from "react";
-import { ActivityIndicator, Modal, StatusBar, StyleSheet, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 let setLoaderVisible: ((visible: boolean) => void) | null = null;
 let pendingState: boolean | null = null;
@@ -46,27 +46,37 @@ export default function Loader() {
     return () => clearTimeout(timer);
   }, [visible]);
 
+  if (!visible) return null;
+
+  // Deliberately NOT a <Modal>. On iOS a Modal is a real view-controller
+  // presentation, and presenting one while another is dismissing leaves an
+  // orphaned modal window that swallows every touch — a frozen screen that
+  // only a force-quit clears. This loader is global and fires from mount
+  // effects (e.g. 1_Meals loads on focus), so it was racing whatever modal the
+  // previous screen was still dismissing: delete a meal, land on My Meals, and
+  // its loader presented into the confirmation modal's dismissal.
+  //
+  // As a plain overlay it renders inside the root view that is already on
+  // screen, so there is no presentation to collide with. It is the last child
+  // in app/_layout.tsx, so it still covers the app. The trade-off is that it no
+  // longer draws above a native Modal — which is correct, since callers inside
+  // a modal must show progress in place anyway (see 2_Plans updateThePlan and
+  // MealDetail handleDeleteMeal).
   return (
-    <Modal
-      transparent
-      visible={visible}
-      animationType="fade"
-      statusBarTranslucent
-      onRequestClose={() => setVisible(false)}
-    >
-      <StatusBar backgroundColor="rgba(0,0,0,0.5)" />
-      <View style={styles.overlay}>
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-        </View>
+    <View style={styles.overlay} pointerEvents="auto">
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
       </View>
-    </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
+    // Above every sibling in the root tree (RootNavigator, Toast).
+    zIndex: 9999,
+    elevation: 9999,
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
