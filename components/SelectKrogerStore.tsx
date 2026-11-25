@@ -26,6 +26,9 @@ import Divider from "./Divider";
 import InputTapArea from "./InputTapArea";
 import ThemeNormalButton from "./ThemeNormalButton";
 
+const SEARCH_DEBOUNCE_MS = 400;
+const ZIP_LENGTH = 5;
+
 interface SelectKrogerStoreProps {
   visible: boolean;
   onClose: () => void;
@@ -50,6 +53,10 @@ const SelectKrogerStore = ({
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const searchInputRef = useRef<TextInput>(null);
+  // The zip the parent has already loaded stores for. Keeps the debounce
+  // below from re-fetching `initialZipCode` the moment the sheet opens, and
+  // from repeating a search the magnifier just ran.
+  const lastSearchedRef = useRef<string>("");
 
   const handleSelectStore = () => {
     const store = stores.find(
@@ -75,21 +82,46 @@ const SelectKrogerStore = ({
     if (!visible) {
       setSearch("");
       setSelectedStoreId("");
+      lastSearchedRef.current = "";
     } else {
       if (initialSelectedStoreId) {
         setSelectedStoreId(initialSelectedStoreId);
       }
       if (initialZipCode) {
         setSearch(initialZipCode);
+        lastSearchedRef.current = initialZipCode.trim();
       }
     }
   }, [visible, initialSelectedStoreId, initialZipCode]);
 
+  const runSearch = async (zipCode: string) => {
+    if (!onSearch) return;
+    lastSearchedRef.current = zipCode;
+    setSelectedStoreId(null);
+    await onSearch(zipCode);
+  };
+
+  // Search as soon as a complete zip is typed. The field is numeric and
+  // capped at 5 characters, so a full zip is an unambiguous signal and there
+  // is nothing to gain from making the user reach for the keyboard's search
+  // key. Partial zips are left to the magnifier, which still works.
+  useEffect(() => {
+    if (!visible) return;
+    const zipCode = search.trim();
+    if (zipCode.length !== ZIP_LENGTH) return;
+    if (zipCode === lastSearchedRef.current) return;
+
+    const handler = setTimeout(() => {
+      void runSearch(zipCode);
+    }, SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, visible]);
+
   const handleSearchSubmit = async () => {
     const trimmed = search.trim();
     if (!trimmed || !onSearch) return;
-    setSelectedStoreId(null);
-    await onSearch(trimmed);
+    await runSearch(trimmed);
   };
 
   const renderStoreItem = ({ item }: { item: any }) => (

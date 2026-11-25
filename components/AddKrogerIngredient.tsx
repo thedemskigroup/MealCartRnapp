@@ -88,6 +88,10 @@ interface AddKrogerIngredientProps {
   onChangeStore?: () => void;
 }
 
+const SEARCH_DEBOUNCE_MS = 400;
+// Shortest term worth a request. "o" would match thousands of products.
+const MIN_SEARCH_LENGTH = 2;
+
 const getProductId = (product: KrogerProduct) =>
   product.productId || product.upc || "";
 
@@ -206,51 +210,94 @@ const AddKrogerIngredient = ({
     null,
   );
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const searchInputRef = useRef<TextInput>(null);
   const [products, setProducts] = useState<KrogerProduct[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  // Guards against out-of-order responses. Typing fires overlapping requests
+  // and a slow early one must not overwrite a newer result, so only the
+  // latest request id is allowed to write state.
+  const requestIdRef = useRef(0);
 
   const locationId = store?.locationId || "";
-
-  useEffect(() => {
-    if (!visible) {
-      setSearch("");
-      setSelectedProductId(null);
-      setProducts([]);
-      setHasSearched(false);
-      setIsSearching(false);
-      return;
-    }
-
-    // if (locationId) {
-    //   console.log("Loading products for location:", locationId);
-    //   void loadProducts(undefined);
-    // }
-  }, [visible]);
 
   const loadProducts = async (term?: string) => {
     if (!locationId) return;
 
+    const requestId = ++requestIdRef.current;
     setIsSearching(true);
 
     try {
       const response = (await searchKrogerProducts(term, locationId, 12)) as {
         data?: KrogerProduct[];
       };
+      if (requestId !== requestIdRef.current) return;
       setProducts(response.data || []);
       setHasSearched(Boolean(term?.trim()));
     } catch {
+      if (requestId !== requestIdRef.current) return;
       setProducts([]);
       setHasSearched(Boolean(term?.trim()));
     } finally {
-      setIsSearching(false);
+      if (requestId === requestIdRef.current) setIsSearching(false);
     }
   };
 
-  const handleSearchSubmit = async () => {
+  useEffect(() => {
+    if (!visible) {
+      setSearch("");
+      setDebouncedSearch("");
+      setSelectedProductId(null);
+      setProducts([]);
+      setHasSearched(false);
+      setIsSearching(false);
+      // Abandon anything still in flight from the previous open.
+      requestIdRef.current += 1;
+    }
+  }, [visible]);
+
+  // Search as the user types. This used to run only from the keyboard's
+  // search key, so typing a term and waiting sat on "no results" forever --
+  // the request was never made. Mirrors the 400ms debounce in 1_Meals.tsx.
+  useEffect(() => {
+    if (!visible) return;
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(handler);
+  }, [search, visible]);
+
+  useEffect(() => {
+    if (!visible) return;
     setSelectedProductId(null);
-    await loadProducts(search.trim() || undefined);
+
+    // A single character matches most of the catalog, so wait for a real
+    // term rather than spending a request on it.
+    if (debouncedSearch.length < MIN_SEARCH_LENGTH) {
+      requestIdRef.current += 1;
+      setProducts([]);
+      setHasSearched(false);
+      setIsSearching(false);
+      return;
+    }
+
+    void loadProducts(debouncedSearch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, visible, locationId]);
+
+  // The keyboard's search key now just flushes the debounce rather than
+  // being the only way to search.
+  const handleSearchSubmit = () => {
+    const term = search.trim();
+    if (term === debouncedSearch) {
+      // Same term, so the effect above will not re-run. Retry directly --
+      // this is the only way back from a failed request without editing the
+      // text.
+      if (term.length >= MIN_SEARCH_LENGTH) void loadProducts(term);
+      return;
+    }
+    setDebouncedSearch(term);
   };
 
   const handleAddIngredient = () => {
@@ -416,9 +463,11 @@ const AddKrogerIngredient = ({
           ) : products.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>
-                {hasSearched
-                  ? Strings.addKrogerIngredient_noResults
-                  : Strings.addKrogerIngredient_searchPrompt}
+                {!locationId
+                  ? Strings.addKrogerIngredient_noStore
+                  : hasSearched
+                    ? Strings.addKrogerIngredient_noResults
+                    : Strings.addKrogerIngredient_searchPrompt}
               </Text>
             </View>
           ) : (

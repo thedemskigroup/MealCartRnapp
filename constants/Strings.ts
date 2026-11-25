@@ -641,6 +641,8 @@ export const Strings = {
   addKrogerIngredient_noResults: "No products found. Try another search.",
   addKrogerIngredient_searchPrompt:
     "Search for an ingredient to see available products",
+  addKrogerIngredient_noStore:
+    "Select a Kroger store first to search for products.",
   addKrogerIngredient_addManualResult: "Add Typed Ingredient",
   addKrogerIngredient_lowStock: "Low Stock",
   addKrogerIngredient_inStore: "In Store",
