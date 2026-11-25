@@ -1,6 +1,6 @@
 import { iconback } from '@/assets/images';
 import BaseButton from '@/components/BaseButton';
-import { horizontalScale, moderateScale, verticalScale } from '@/constants/Constants';
+import { CONTENT_MAX_WIDTH, horizontalScale, moderateScale, verticalScale } from '@/constants/Constants';
 import { Strings } from '@/constants/Strings';
 import { Colors, FontFamilies } from '@/constants/Theme';
 import { useProfileViewModel } from '@/viewmodels/ProfileViewModel';
@@ -37,6 +37,7 @@ export default function PasswordReset({  }) {
     };
     return (
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+            <View style={styles.content}>
             <View style={styles.headerRow}>
                 <TouchableOpacity onPress={() => router.back()}>
                     <Image
@@ -76,7 +77,7 @@ export default function PasswordReset({  }) {
                 title={Strings.passwordReset_updatePassword}
                 gradientButton={true}
                 textStyle={styles.savePreference}
-                width={width * 0.92}
+                width={Math.min(width * 0.92, CONTENT_MAX_WIDTH - horizontalScale(40))}
                 onPress={handleUpdatePassword}
                 loading={loading}
             />
@@ -84,6 +85,7 @@ export default function PasswordReset({  }) {
 
 
 
+            </View>
         </SafeAreaView>
 
     );
@@ -94,6 +96,14 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: Colors.white,
         paddingHorizontal: horizontalScale(20),
+    },
+    // Caps the form column on tablets. A no-op on phones, where
+    // CONTENT_MAX_WIDTH is wider than the window.
+    content: {
+        flex: 1,
+        width: '100%',
+        maxWidth: CONTENT_MAX_WIDTH,
+        alignSelf: 'center',
     },
     headerRow: {
         flexDirection: 'row',

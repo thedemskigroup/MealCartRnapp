@@ -2,7 +2,11 @@ import AuthFooter from "@/components/AuthFooter";
 import BaseTextInput from "@/components/BaseTextInput";
 import Divider from "@/components/Divider";
 import Header from "@/components/Header";
-import { moderateScale, verticalScale } from "@/constants/Constants";
+import {
+  CONTENT_MAX_WIDTH,
+  moderateScale,
+  verticalScale,
+} from "@/constants/Constants";
 import { Strings } from "@/constants/Strings";
 import { Colors, FontFamilies } from "@/constants/Theme";
 import * as appKeys from "@/reduxStore/appKeys";
@@ -342,6 +346,8 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: moderateScale(20),
     justifyContent: "center",
+    // Centre the capped column below.
+    alignItems: "center",
   },
   form: {
     gap: moderateScale(12),
@@ -349,6 +355,9 @@ const styles = StyleSheet.create({
   container: {
     gap: moderateScale(35),
     justifyContent: "center",
+    // Fill the phone, cap on a tablet (see CONTENT_MAX_WIDTH).
+    width: "100%",
+    maxWidth: CONTENT_MAX_WIDTH,
   },
   buttonContainer: {
     gap: verticalScale(10),
@@ -367,6 +376,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: moderateScale(20),
     paddingBottom: verticalScale(10),
     backgroundColor: Colors.background,
+    // Outside the ScrollView, so it needs its own cap to stay aligned.
+    // Fill the phone, cap on a tablet (see CONTENT_MAX_WIDTH).
+    width: "100%",
+    maxWidth: CONTENT_MAX_WIDTH,
+    alignSelf: "center",
   },
   dividerStyle: {
     marginTop: verticalScale(15),

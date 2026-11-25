@@ -4,7 +4,11 @@ import BaseButton from "@/components/BaseButton";
 import BaseTextInput from "@/components/BaseTextInput";
 import Header from "@/components/Header";
 import { APP_ROUTES } from "@/constants/AppRoutes";
-import { horizontalScale, verticalScale } from "@/constants/Constants";
+import {
+  CONTENT_MAX_WIDTH,
+  horizontalScale,
+  verticalScale,
+} from "@/constants/Constants";
 import { Strings } from "@/constants/Strings";
 import { Colors } from "@/constants/Theme";
 import { backNavigation, resetAndNavigate } from "@/utils/Navigation";
@@ -160,9 +164,14 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
+    // Centre the capped column below.
+    alignItems: "center",
   },
   contentView: {
     gap: verticalScale(34),
+    // Fill the phone, cap on a tablet (see CONTENT_MAX_WIDTH).
+    width: "100%",
+    maxWidth: CONTENT_MAX_WIDTH,
   },
   form: {
     gap: verticalScale(12),
