@@ -865,7 +865,12 @@ const styles = StyleSheet.create({
     borderColor: Colors.borderColor,
     height: isAndroid ? verticalScale(50) : verticalScale(44),
     paddingHorizontal: horizontalScale(12),
-    width: width * 0.6,
+    // Fill whatever the row leaves after the filter icon, rather than taking a
+    // fixed 60% of a module-load width snapshot. That fraction left roughly a
+    // third of a tablet row empty between the field and the filter button, and
+    // never reflowed on rotation.
+    flex: 1,
+    marginRight: horizontalScale(12),
   },
   searchInput: {
     flex: 1,
