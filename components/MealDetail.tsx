@@ -9,6 +9,7 @@ import { APP_ROUTES } from "@/constants/AppRoutes";
 import {
   addDotAtEnd,
   horizontalScale,
+  layoutWidth,
   moderateScale,
   verticalScale,
 } from "@/constants/Constants";
@@ -21,7 +22,6 @@ import { showErrorToast, showSuccessToast } from "@/utils/Toast";
 import { useMealsViewModel } from "@/viewmodels/MealsViewModel";
 import { useEffect, useRef, useState } from "react";
 import {
-  Dimensions,
   Image,
   ScrollView,
   StyleSheet,
@@ -34,7 +34,6 @@ import ConfirmationModal from "./ConfirmationModal";
 import SendToShoppingList from "./SendShoppingList";
 import SpaceBetweenButtons from "./SpaceBetweenButtons";
 import ThemeGradientButton from "./ThemeGradientButton";
-const { width } = Dimensions.get("window");
 
 // Long enough for a transparent Modal's fade-out to finish before anything
 // else touches the presentation. Navigating or presenting a second modal
@@ -412,7 +411,8 @@ const styles = StyleSheet.create({
   ingredientName: {
     fontSize: moderateScale(14),
     fontFamily: FontFamily.ROBOTO_MEDIUM,
-    maxWidth: width * moderateScale(0.7),
+    // See ConfirmationModal: a fraction must not go through moderateScale.
+    maxWidth: layoutWidth * 0.7,
     color: Colors.primary,
   },
   ingredientValue: {
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
   parentOfAddList: {
     flexDirection: "row",
     alignItems: "center",
-    width: width * moderateScale(0.3),
+    width: layoutWidth * 0.3,
     marginEnd: horizontalScale(15),
     justifyContent: "space-between",
   },
@@ -458,15 +458,19 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     position: "absolute",
     bottom: verticalScale(40),
+    // Anchored both sides rather than given a width fraction. The old
+    // `width * moderateScale(0.96)` resolved to 1.12x the window at the 1.3x
+    // scale cap, so on a 1280dp tablet this row was ~1437dp wide and ran off
+    // the screen, taking the category tag with it.
     left: horizontalScale(16),
-    width: width * moderateScale(0.96),
+    right: horizontalScale(16),
   },
   backImage: {
     width: moderateScale(30),
     height: moderateScale(30),
   },
   parentOfname: {
-    width: width * moderateScale(0.5),
+    width: layoutWidth * 0.5,
   },
   editImage: {
     width: moderateScale(20),

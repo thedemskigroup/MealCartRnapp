@@ -1,13 +1,12 @@
 import { horizontalScale, layoutWidth, moderateScale, verticalScale } from "@/constants/Constants";
 import { Strings } from "@/constants/Strings";
 import { Colors, FontFamilies } from "@/constants/Theme";
-import { Dimensions, Modal, StyleSheet, Text, View } from "react-native";
+import { Modal, StyleSheet, Text, View } from "react-native";
 import BaseButton from "./BaseButton";
 import SpaceBetweenButtons from "./SpaceBetweenButtons";
 import ThemeNormalButton from "./ThemeNormalButton";
 import ThemeGradientButton from "./ThemeGradientButton";
 
-const { width } = Dimensions.get("window");
 
 type ConfirmationModalProps = {
   visible: boolean;
@@ -84,7 +83,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   container: {
-    width: width * moderateScale(0.85),
+    // `width * moderateScale(0.85)` -- moderateScale is for SIZES, and running
+    // a fraction through it scales the fraction itself: at the 1.3x cap 0.85
+    // became 0.978, so the dialog took 98% of a 1280dp tablet instead of 85%.
+    // layoutWidth bounds the base too, so the dialog stays dialog-sized.
+    // Identical on phones: 430 * 0.85 = 365.5 either way.
+    width: layoutWidth * 0.85,
     backgroundColor: Colors.white,
     borderRadius: moderateScale(14),
     paddingHorizontal: moderateScale(22),
