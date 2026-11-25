@@ -1,6 +1,6 @@
 import { calendaricon, closeIcon } from "@/assets/images";
 import { CheckBox, FilledCheckBox, IconCartWhite } from "@/assets/svg";
-import { horizontalScale, layoutWidth, moderateScale, verticalScale } from "@/constants/Constants";
+import { horizontalScale, moderateScale, verticalScale } from "@/constants/Constants";
 import { Strings } from "@/constants/Strings";
 import { Colors, FontFamilies } from "@/constants/Theme";
 import { useTourStep } from "@/context/TourStepContext";
@@ -35,6 +35,7 @@ import BaseButton from "./BaseButton";
 import CustomTextInput from "./CustomTextInput";
 import CustomDateTimePicker from "./DateTimePicker";
 import { hideLoader, showLoader } from "./Loader";
+import SpaceBetweenButtons from "./SpaceBetweenButtons";
 import ThemeNormalButton from "./ThemeNormalButton";
 
 export interface CreateNewListBottomSheetRef {
@@ -594,40 +595,50 @@ const CreateNewListBottomSheet = forwardRef<
             </TourGuideZone>
           </View>
 
-          <View style={styles.parentOfConfirmButton}>
-            <ThemeNormalButton
-              title={Strings.createList_discard}
-              backgroundColor={Colors.white}
-              width={layoutWidth * 0.28}
-              containerStyle={styles.cancelButtonError}
-              textColor={Colors.error}
-              showElevation={false}
-              textStyle={styles.discardText}
-              onPress={() => {
-                resetState();
-                bottomSheetRef.current?.close();
-              }}
-            />
-            <BaseButton
-              title={Strings.createList_saveShoppingList}
-              gradientButton={true}
-              width={layoutWidth * 0.65}
-              gradientStartColor={Colors._667D4C}
-              gradientEndColor={Colors._9DAF89}
-              gradientStart={{ x: 0, y: 0 }}
-              gradientEnd={{ x: 1, y: 0 }}
-              textColor={Colors.white}
-              rightChild={
-                <IconCartWhite
-                  width={verticalScale(21)}
-                  height={verticalScale(21)}
-                />
-              }
-              textStyle={[styles.confirmButton]}
-              textStyleText={styles.saveShopping}
-              onPress={handleSaveShoppingList}
-            />
-          </View>
+          {/*
+            Equal halves via the shared SpaceBetweenButtons (flex: 1 each),
+            rather than the old hand-rolled row. Discard was pinned to 28% and
+            Save to 65%, which neither filled the row nor divided it evenly --
+            and ThemeNormalButton ignores its `width` prop entirely, so the
+            28% came from the stylesheet while the 65% came from the prop.
+          */}
+          <SpaceBetweenButtons
+            containerStyle={styles.parentOfConfirmButton}
+            left={
+              <ThemeNormalButton
+                title={Strings.createList_discard}
+                backgroundColor={Colors.white}
+                containerStyle={styles.cancelButtonError}
+                textColor={Colors.error}
+                showElevation={false}
+                textStyle={styles.discardText}
+                onPress={() => {
+                  resetState();
+                  bottomSheetRef.current?.close();
+                }}
+              />
+            }
+            right={
+              <BaseButton
+                title={Strings.createList_saveShoppingList}
+                gradientButton={true}
+                gradientStartColor={Colors._667D4C}
+                gradientEndColor={Colors._9DAF89}
+                gradientStart={{ x: 0, y: 0 }}
+                gradientEnd={{ x: 1, y: 0 }}
+                textColor={Colors.white}
+                rightChild={
+                  <IconCartWhite
+                    width={verticalScale(21)}
+                    height={verticalScale(21)}
+                  />
+                }
+                textStyle={[styles.confirmButton]}
+                textStyleText={styles.saveShopping}
+                onPress={handleSaveShoppingList}
+              />
+            }
+          />
         </BottomSheetScrollView>
         <AddItemToList
           visible={isAddItemVisible}
@@ -833,7 +844,8 @@ const styles = StyleSheet.create({
   cancelButtonError: {
     fontFamily: FontFamilies.ROBOTO_MEDIUM,
     color: Colors.error,
-    width: "28%",
+    // Fills its half of SpaceBetweenButtons; was a hardcoded 28% of the row.
+    width: "100%",
     fontSize: moderateScale(12),
     borderWidth: moderateScale(1),
     borderColor: Colors.borderColor,
