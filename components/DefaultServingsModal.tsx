@@ -1,4 +1,4 @@
-import { horizontalScale, layoutWidth, moderateScale, verticalScale } from "@/constants/Constants";
+import { DIALOG_MAX_WIDTH, dialogWidth, horizontalScale, moderateScale, verticalScale } from "@/constants/Constants";
 import { Strings } from "@/constants/Strings";
 import { Colors, FontFamilies } from "@/constants/Theme";
 import { useEffect, useState } from "react";
@@ -94,7 +94,7 @@ const DefaultServingsModal: React.FC<DefaultServingsModalProps> = ({
               title={Strings.defaultServings_cancel}
               gradientButton={false}
               textColor={Colors.background}
-              width={layoutWidth * 0.35}
+              width={dialogWidth * 0.35}
               textStyle={styles.cancelButton}
               textStyleText={styles.cancelButtonText}
               onPress={onClose}
@@ -107,7 +107,7 @@ const DefaultServingsModal: React.FC<DefaultServingsModalProps> = ({
               }
               gradientButton={true}
               textColor={Colors.background}
-              width={layoutWidth * 0.35}
+              width={dialogWidth * 0.35}
               disabled={isSaving}
               textStyle={
                 isSaving ? styles.confirmButtonDisabled : styles.confirmButton
@@ -131,6 +131,9 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: "85%",
+    // Was 85% of the whole window, so 1088dp on a 1280dp tablet --
+    // a very wide dialog holding two small buttons.
+    maxWidth: DIALOG_MAX_WIDTH * 0.85,
     backgroundColor: Colors.white,
     borderRadius: moderateScale(16),
     padding: moderateScale(22),

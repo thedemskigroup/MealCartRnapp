@@ -1,4 +1,4 @@
-import { horizontalScale, layoutWidth, moderateScale, verticalScale } from "@/constants/Constants";
+import { dialogWidth, horizontalScale, moderateScale, verticalScale } from "@/constants/Constants";
 import { Strings } from "@/constants/Strings";
 import { Colors, FontFamilies } from "@/constants/Theme";
 import { Modal, StyleSheet, Text, View } from "react-native";
@@ -49,7 +49,7 @@ const ConfirmationModal = ({
             <ThemeNormalButton
               title={cancelText}
               textColor={Colors.background}
-              width={layoutWidth * 0.35}
+              width={dialogWidth * 0.35}
               showElevation={false}
               containerStyle={styles.editButton}
               textStyle={styles.textstyle}
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     // became 0.978, so the dialog took 98% of a 1280dp tablet instead of 85%.
     // layoutWidth bounds the base too, so the dialog stays dialog-sized.
     // Identical on phones: 430 * 0.85 = 365.5 either way.
-    width: layoutWidth * 0.85,
+    width: dialogWidth * 0.85,
     backgroundColor: Colors.white,
     borderRadius: moderateScale(14),
     paddingHorizontal: moderateScale(22),

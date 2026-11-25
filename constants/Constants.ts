@@ -86,6 +86,24 @@ export const CONTENT_MAX_WIDTH = 480;
  */
 export const layoutWidth: number = Math.min(screenWidth, CONTENT_MAX_WIDTH);
 
+/**
+ * The same idea as CONTENT_MAX_WIDTH / layoutWidth, but for dialogs.
+ *
+ * A form is a single column of fields, so CONTENT_MAX_WIDTH (480) suits it.
+ * A dialog is a different shape: its text wants to read across, and its
+ * buttons sit side by side, so the form cap makes it look pinched -- the
+ * delete-meal dialog came out at 480 * 0.85 = 408dp with its two buttons
+ * crowding each other.
+ *
+ * 660 is chosen so the usual `dialogWidth * 0.85` container lands at ~561dp,
+ * matching Material's 560dp maximum dialog width.
+ *
+ * As with layoutWidth, this IS the window width on a phone (every phone is
+ * narrower than the cap), so phone dialogs are untouched.
+ */
+export const DIALOG_MAX_WIDTH = 660;
+export const dialogWidth: number = Math.min(screenWidth, DIALOG_MAX_WIDTH);
+
 // Logging flag
 export const isShowLog: boolean = true;
 

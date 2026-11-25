@@ -1,5 +1,5 @@
 import { closeIcon } from '@/assets/images';
-import { horizontalScale, layoutWidth, moderateScale, verticalScale } from '@/constants/Constants';
+import { dialogWidth, horizontalScale, moderateScale, verticalScale } from '@/constants/Constants';
 import { Strings } from '@/constants/Strings';
 import { Colors, FontFamilies } from '@/constants/Theme';
 import { useState } from 'react';
@@ -118,7 +118,7 @@ const FilterModal = ({ visible, onClose, onConfirm, onReset }: FilterModalProps)
                             title={Strings.filterModal_reset}
                             gradientButton={false}
                             textColor={Colors.background}
-                            width={layoutWidth * 0.42}
+                            width={dialogWidth * 0.42}
                             textStyle={styles.cancelButton}
                             textStyleText={styles.cancelButtonText}
                             onPress={handleReset}
@@ -127,7 +127,7 @@ const FilterModal = ({ visible, onClose, onConfirm, onReset }: FilterModalProps)
                             title={Strings.filterModal_confirm}
                             gradientButton={true}
                             textColor={Colors.background}
-                            width={layoutWidth * 0.42}
+                            width={dialogWidth * 0.42}
                             textStyle={styles.confirmButton}
                             textStyleText={styles.confirmButtonText}
                             onPress={() => {
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     modalContainer: {
-        width: layoutWidth * 0.92,
+        width: dialogWidth * 0.92,
         backgroundColor: Colors.white,
         borderRadius: moderateScale(22),
         padding: horizontalScale(20),
