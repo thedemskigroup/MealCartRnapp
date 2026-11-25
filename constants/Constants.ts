@@ -54,6 +54,18 @@ const longEdge: number =
 const widthRatio: number = Math.min(shortEdge / sampleWidth, MAX_UPSCALE);
 const heightRatio: number = Math.min(longEdge / sampleHeight, MAX_UPSCALE);
 
+/**
+ * Widest a single column of form content should get.
+ *
+ * Screens built for a 430pt phone fill the window, which is fine until the
+ * window is a tablet: on a 2560px-wide landscape tablet the sign-in fields and
+ * buttons stretched the full width, so an email input was ~2500px of empty box.
+ * Capping the column and centring it keeps the form readable without needing a
+ * separate tablet layout. On a phone this is a no-op -- the cap is wider than
+ * the screen, so `width: "100%"` wins.
+ */
+export const CONTENT_MAX_WIDTH = 480;
+
 // Logging flag
 export const isShowLog: boolean = true;
 

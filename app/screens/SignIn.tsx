@@ -3,7 +3,11 @@ import BaseTextInput from "@/components/BaseTextInput";
 import Divider from "@/components/Divider";
 import GradientText from "@/components/GradientText";
 import Header from "@/components/Header";
-import { moderateScale, verticalScale } from "@/constants/Constants";
+import {
+  CONTENT_MAX_WIDTH,
+  moderateScale,
+  verticalScale,
+} from "@/constants/Constants";
 import { Strings } from "@/constants/Strings";
 import {
   pushNavigation,
@@ -320,6 +324,9 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: moderateScale(25),
     justifyContent: "center",
+    // Centre the capped column below; without this it would hug the left edge
+    // on a wide screen.
+    alignItems: "center",
   },
   forgotPassword: {
     textAlign: "right",
@@ -332,6 +339,9 @@ const styles = StyleSheet.create({
   },
   container: {
     gap: moderateScale(35),
+    // Fill the phone, cap on a tablet (see CONTENT_MAX_WIDTH).
+    width: "100%",
+    maxWidth: CONTENT_MAX_WIDTH,
   },
   middleContainer: {
     gap: moderateScale(8),
@@ -346,6 +356,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: moderateScale(20),
     paddingBottom: verticalScale(10),
     backgroundColor: Colors.background,
+    // Sits outside the ScrollView, so it needs the same cap to stay aligned
+    // with the form above it.
+    width: "100%",
+    maxWidth: CONTENT_MAX_WIDTH,
+    alignSelf: "center",
   },
   forgotPasswordContainer: {
     alignSelf: "flex-end",
