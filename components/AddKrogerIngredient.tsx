@@ -19,11 +19,15 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
+  Keyboard,
+  KeyboardAvoidingView,
   Modal,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 
@@ -406,8 +410,26 @@ const AddKrogerIngredient = ({
       transparent
       visible={visible}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.container}>
+      {/*
+        The keyboard used to cover the results list and both buttons outright:
+        an RN Modal is its own window, so the screen behind it resizing does
+        nothing for the sheet. Shrinking the overlay by the keyboard height
+        re-centres the sheet in what is left, and `maxHeight: 85%` then
+        resolves against that smaller box.
+      */}
+      <KeyboardAvoidingView
+        style={styles.modalOverlay}
+        behavior={isAndroid ? "height" : "padding"}
+      >
+        {/* Tapping the dimmed area behind the sheet drops the keyboard.
+            Does not close the sheet -- only the Cancel button does that. */}
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={Keyboard.dismiss}
+          accessible={false}
+        />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <View style={styles.container}>
           <View style={styles.headerRow}>
             <Text style={styles.headerTitle}>
               {Strings.addKrogerIngredient_title}
@@ -453,6 +475,14 @@ const AddKrogerIngredient = ({
 
           <Divider showText={false} style={styles.divider} />
 
+          {/*
+            The results area is the only part allowed to shrink. The sheet caps
+            at `maxHeight: 85%`, and once the keyboard shrinks the overlay that
+            cap got smaller than the content -- so the buttons below overflowed
+            past the sheet's own background and ended up under the keyboard.
+            Letting this region absorb the loss keeps them on screen.
+          */}
+          <View style={styles.resultsArea}>
           {isSearching ? (
             <View style={styles.emptyContainer}>
               <ActivityIndicator size="large" color={Colors.tertiary} />
@@ -478,8 +508,12 @@ const AddKrogerIngredient = ({
               renderItem={renderProductItem}
               showsVerticalScrollIndicator={false}
               style={styles.listStyle}
+              // Without this the first tap on a product only dismisses the
+              // keyboard, so selecting one takes two taps.
+              keyboardShouldPersistTaps="handled"
             />
           )}
+          </View>
 
           <View style={styles.buttonRow}>
             <ThemeNormalButton
@@ -495,9 +529,10 @@ const AddKrogerIngredient = ({
               textStyle={styles.addButtonText}
               disabled={!selectedProductId && !search.trim()}
             />
+            </View>
           </View>
-        </View>
-      </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -557,6 +592,11 @@ const styles = StyleSheet.create({
     fontFamily: FontFamilies.ROBOTO_REGULAR,
     fontSize: moderateScale(15),
     color: Colors.primary,
+    // Android's EditText adds its own asymmetric font padding, which left the
+    // text sitting above the middle of the pill. 1_Meals.tsx's search field
+    // already carries these and reads correctly.
+    textAlignVertical: "center",
+    paddingVertical: 0,
   },
   divider: {
     marginTop: verticalScale(6),
@@ -568,6 +608,10 @@ const styles = StyleSheet.create({
   },
   listContent: {
     gap: verticalScale(10),
+    // The last card sat flush against the buttons below, with its elevation
+    // shadow clipped by the list's edge.
+    paddingTop: verticalScale(2),
+    paddingBottom: verticalScale(12),
   },
   productCard: {
     flexDirection: "row",
@@ -638,10 +682,16 @@ const styles = StyleSheet.create({
   checkboxIcon: {
     marginRight: horizontalScale(6),
   },
+  resultsArea: {
+    flexShrink: 1,
+    minHeight: 0,
+  },
   emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: verticalScale(40),
+    // Modest padding so this message survives being squeezed when the
+    // keyboard is up -- at 40 it was the first thing clipped away.
+    paddingVertical: verticalScale(18),
     gap: verticalScale(10),
   },
   emptyText: {

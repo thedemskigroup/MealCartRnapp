@@ -15,11 +15,15 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
+  Keyboard,
+  KeyboardAvoidingView,
   Modal,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import Divider from "./Divider";
@@ -168,8 +172,21 @@ const SelectKrogerStore = ({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.container}>
+      {/* See AddKrogerIngredient: a Modal is its own window, so it needs its
+          own keyboard handling or the keyboard covers the list and buttons. */}
+      <KeyboardAvoidingView
+        style={styles.modalOverlay}
+        behavior={isAndroid ? "height" : "padding"}
+      >
+        {/* Tapping the dimmed area behind the sheet drops the keyboard.
+            Does not close the sheet -- only the Cancel button does that. */}
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={Keyboard.dismiss}
+          accessible={false}
+        />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <View style={styles.container}>
           <KrogerIcon
             width={horizontalScale(76)}
             height={verticalScale(43)}
@@ -213,6 +230,9 @@ const SelectKrogerStore = ({
             </TouchableOpacity>
           </InputTapArea>
           <Divider showText={false} style={styles.divider} />
+          {/* See AddKrogerIngredient: only this region shrinks, so the
+              buttons below stay on screen when the keyboard is up. */}
+          <View style={styles.resultsArea}>
           {isSearching ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={Colors.tertiary} />
@@ -231,8 +251,10 @@ const SelectKrogerStore = ({
               keyExtractor={(item) => getStoreId(item)}
               style={styles.listStyle}
               contentContainerStyle={styles.listContent}
+              keyboardShouldPersistTaps="handled"
             />
           )}
+          </View>
           <View style={styles.buttonRow}>
             <ThemeNormalButton
               title={Strings.selectKrogerStore_cancel}
@@ -247,9 +269,10 @@ const SelectKrogerStore = ({
               textStyle={{ color: Colors.white, fontSize: fontSize(16) }}
               disabled={!selectedStoreId}
             />
+            </View>
           </View>
-        </View>
-      </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -317,14 +340,21 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(15),
     color: Colors.primary,
     marginLeft: horizontalScale(8),
+    // Same Android font-padding offset as the ingredient search.
+    textAlignVertical: "center",
+    paddingVertical: 0,
   },
   searchButton: {
     padding: moderateScale(6),
   },
+  resultsArea: {
+    flexShrink: 1,
+    minHeight: 0,
+  },
   loadingContainer: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: verticalScale(40),
+    paddingVertical: verticalScale(18),
     gap: verticalScale(10),
   },
   loadingText: {
@@ -347,6 +377,8 @@ const styles = StyleSheet.create({
   },
   listContent: {
     gap: verticalScale(10),
+    paddingTop: verticalScale(2),
+    paddingBottom: verticalScale(12),
   },
   storeCard: {
     flexDirection: "row",
