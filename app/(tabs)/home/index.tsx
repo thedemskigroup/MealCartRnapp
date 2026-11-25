@@ -35,6 +35,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import {
@@ -47,7 +48,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { TourGuideZone, useTourGuideController } from "rn-tourguide";
 
 const { height } = Dimensions.get("window");
-const { width } = Dimensions.get("window");
 
 const SWIPE_THRESHOLD = 30; // Minimum swipe distance to trigger hide
 const GREETING_SECTION_HEIGHT = verticalScale(100);
@@ -63,7 +63,28 @@ const HomeScreen: React.FC = () => {
   const { enrichedActivePlan, fetchActivePlan } = usePlanViewModel();
   const { recentMeals, fetchTheRecentMeals } = useMealsViewModel();
   const [activePlan, setActivePlan] = useState(enrichedActivePlan);
-  const itemWidth = (width - horizontalScale(40) - horizontalScale(8)) / 2;
+
+  // Recent Meals grid, matching the rule the Meals tab uses: keep the CARD a
+  // constant size and fit as many columns as the row actually measures,
+  // instead of always two. Two columns of a 1280dp tablet were 616dp cards.
+  //
+  // `gridWidth` is the measured row; `windowWidth` is only the first-render
+  // fallback. Card width is identical to the old formula at every phone size
+  // (430dp: (430-40-8)/2 = 191 either way) because the constants are the
+  // same -- 20dp of screen padding each side and an 8dp gutter.
+  const { width: windowWidth } = useWindowDimensions();
+  const [gridWidth, setGridWidth] = useState(0);
+  const MIN_CARD_WIDTH = horizontalScale(190);
+  const GRID_GUTTER = horizontalScale(8);
+  const availableGridWidth = gridWidth || windowWidth - horizontalScale(40);
+  const numColumns = Math.max(
+    2,
+    Math.floor(
+      (availableGridWidth + GRID_GUTTER) / (MIN_CARD_WIDTH + GRID_GUTTER),
+    ),
+  );
+  const itemWidth =
+    (availableGridWidth - GRID_GUTTER * (numColumns - 1)) / numColumns;
   const [refreshing, setRefreshing] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [isLayoutReady, setIsLayoutReady] = useState(false);
@@ -607,24 +628,33 @@ const HomeScreen: React.FC = () => {
                     </View>
 
                     <View
+                      onLayout={(event) =>
+                        setGridWidth(event.nativeEvent.layout.width)
+                      }
                       style={{
                         flexDirection: "row",
                         flexWrap: "wrap",
-                        justifyContent: "space-between",
+                        // flex-start + gap, not space-between: with a partial
+                        // row (2 meals in a 4-column grid) space-between flung
+                        // the cards to opposite edges.
+                        justifyContent: "flex-start",
+                        gap: GRID_GUTTER,
                         marginVertical: verticalScale(8),
                       }}
                     >
-                      {mealData.slice(0, 4).map((item, index) => (
-                        <View
-                          key={item.id}
-                          style={{
-                            width: itemWidth,
-                            marginBottom: verticalScale(8),
-                          }}
-                        >
-                          {renderMealCard({ item, index })}
-                        </View>
-                      ))}
+                      {mealData
+                        .slice(0, Math.max(4, numColumns))
+                        .map((item, index) => (
+                          <View
+                            key={item.id}
+                            style={{
+                              width: itemWidth,
+                              marginBottom: verticalScale(8),
+                            }}
+                          >
+                            {renderMealCard({ item, index })}
+                          </View>
+                        ))}
                     </View>
                   </View>
                 ) : (
