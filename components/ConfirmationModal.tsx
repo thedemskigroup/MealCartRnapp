@@ -1,8 +1,4 @@
-import {
-  horizontalScale,
-  moderateScale,
-  verticalScale,
-} from "@/constants/Constants";
+import { horizontalScale, layoutWidth, moderateScale, verticalScale } from "@/constants/Constants";
 import { Strings } from "@/constants/Strings";
 import { Colors, FontFamilies } from "@/constants/Theme";
 import { Dimensions, Modal, StyleSheet, Text, View } from "react-native";
@@ -54,7 +50,7 @@ const ConfirmationModal = ({
             <ThemeNormalButton
               title={cancelText}
               textColor={Colors.background}
-              width={width * 0.35}
+              width={layoutWidth * 0.35}
               showElevation={false}
               containerStyle={styles.editButton}
               textStyle={styles.textstyle}

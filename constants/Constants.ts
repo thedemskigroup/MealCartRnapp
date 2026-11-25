@@ -66,6 +66,26 @@ const heightRatio: number = Math.min(longEdge / sampleHeight, MAX_UPSCALE);
  */
 export const CONTENT_MAX_WIDTH = 480;
 
+/**
+ * A width to size content against: the real window on a phone, capped on
+ * anything wider.
+ *
+ * Screens and modals across the app size things as a fraction of the window --
+ * `width * 0.35` for a dialog button, `width * 0.85` for a popup. That reads
+ * fine on a phone and falls apart on a tablet, where the same fractions of a
+ * 1280dp window give a 448dp button and an 1088dp dialog.
+ *
+ * Substituting this for the raw window width keeps every fraction and every
+ * relative proportion exactly as designed while bounding the result. On a
+ * phone it IS the window width (any phone is narrower than
+ * CONTENT_MAX_WIDTH), so those layouts are untouched.
+ *
+ * Still a module-load snapshot, like the rest of this file -- but an
+ * orientation-independent one on anything above the cap, so rotation does not
+ * change it there.
+ */
+export const layoutWidth: number = Math.min(screenWidth, CONTENT_MAX_WIDTH);
+
 // Logging flag
 export const isShowLog: boolean = true;
 

@@ -8,11 +8,7 @@ import { hideLoader, showLoader } from "@/components/Loader";
 import SpaceBetweenButtons from "@/components/SpaceBetweenButtons";
 import ThemeNormalButton from "@/components/ThemeNormalButton";
 import { APP_ROUTES } from "@/constants/AppRoutes";
-import {
-  horizontalScale,
-  moderateScale,
-  verticalScale,
-} from "@/constants/Constants";
+import { horizontalScale, layoutWidth, moderateScale, verticalScale } from "@/constants/Constants";
 import { Strings } from "@/constants/Strings";
 import { Colors, FontFamilies } from "@/constants/Theme";
 import { useTourStep } from "@/context/TourStepContext";
@@ -449,7 +445,7 @@ const PlansScreen: React.FC = () => {
               title={Strings.plans_getShoppingList}
               gradientButton={true}
               textColor={Colors.background}
-              width={width * 0.53}
+              width={layoutWidth * 0.53}
               textStyle={styles.createButtonText}
               rightChild={
                 <Image
@@ -1005,7 +1001,7 @@ const styles = StyleSheet.create({
     marginRight: horizontalScale(-11),
   },
   mealColumn: {
-    width: width * 0.28,
+    width: layoutWidth * 0.28,
     marginRight: horizontalScale(12),
   },
   createListIcon: {

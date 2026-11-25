@@ -8,11 +8,7 @@ import {
 } from "@/assets/images";
 import ThemeGradientButton from "@/components/ThemeGradientButton";
 import { APP_ROUTES } from "@/constants/AppRoutes";
-import {
-  horizontalScale,
-  moderateScale,
-  verticalScale,
-} from "@/constants/Constants";
+import { horizontalScale, layoutWidth, moderateScale, verticalScale } from "@/constants/Constants";
 import { Strings } from "@/constants/Strings";
 import { Colors } from "@/constants/Theme";
 import { FontFamily, fontSize } from "@/utils/Fonts";
@@ -130,7 +126,7 @@ const WelcomeMealCart: React.FC = () => {
                 ? Strings.welcomeMealCart_getStarted
                 : Strings.welcomeMealCart_next
             }
-            width={currentIndex > 0 ? width * 0.7 : width * 0.9}
+            width={currentIndex > 0 ? layoutWidth * 0.7 : layoutWidth * 0.9}
             gradientStartColor={Colors._667D4C}
             gradientEndColor={Colors._9DAF89}
             gradientStart={{ x: 0, y: 0 }}
@@ -167,7 +163,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     textAlign: "center",
 
-    maxWidth: width * 0.9,
+    maxWidth: layoutWidth * 0.9,
   },
 
   subheading: {
@@ -177,10 +173,10 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     textAlign: "center",
 
-    maxWidth: width * 0.9,
+    maxWidth: layoutWidth * 0.9,
   },
   parentImage: {
-    maxWidth: width * 0.9,
+    maxWidth: layoutWidth * 0.9,
 
     justifyContent: "center",
     alignItems: "center",

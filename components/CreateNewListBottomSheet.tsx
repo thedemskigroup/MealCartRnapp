@@ -1,10 +1,6 @@
 import { calendaricon, closeIcon } from "@/assets/images";
 import { CheckBox, FilledCheckBox, IconCartWhite } from "@/assets/svg";
-import {
-  horizontalScale,
-  moderateScale,
-  verticalScale,
-} from "@/constants/Constants";
+import { horizontalScale, layoutWidth, moderateScale, verticalScale } from "@/constants/Constants";
 import { Strings } from "@/constants/Strings";
 import { Colors, FontFamilies } from "@/constants/Theme";
 import { useTourStep } from "@/context/TourStepContext";
@@ -602,7 +598,7 @@ const CreateNewListBottomSheet = forwardRef<
             <ThemeNormalButton
               title={Strings.createList_discard}
               backgroundColor={Colors.white}
-              width={width * 0.28}
+              width={layoutWidth * 0.28}
               containerStyle={styles.cancelButtonError}
               textColor={Colors.error}
               showElevation={false}
@@ -615,7 +611,7 @@ const CreateNewListBottomSheet = forwardRef<
             <BaseButton
               title={Strings.createList_saveShoppingList}
               gradientButton={true}
-              width={width * 0.65}
+              width={layoutWidth * 0.65}
               gradientStartColor={Colors._667D4C}
               gradientEndColor={Colors._9DAF89}
               gradientStart={{ x: 0, y: 0 }}

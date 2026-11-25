@@ -10,12 +10,7 @@ import BaseButton from "@/components/BaseButton";
 import CustomDateTimePicker from "@/components/DateTimePicker";
 import { hideLoader, showLoader } from "@/components/Loader";
 import ThemeNormalButton from "@/components/ThemeNormalButton";
-import {
-  horizontalScale,
-  moderateScale,
-  setEndOfDay,
-  verticalScale,
-} from "@/constants/Constants";
+import { horizontalScale, layoutWidth, moderateScale, setEndOfDay, verticalScale } from "@/constants/Constants";
 import { Strings } from "@/constants/Strings";
 import { Colors, FontFamilies } from "@/constants/Theme";
 import { useTourStep } from "@/context/TourStepContext";
@@ -627,7 +622,7 @@ export default function CreateMealPlan({}) {
               : Strings.createMealPlan_save
           }
           gradientButton={true}
-          width={width * 0.65}
+          width={layoutWidth * 0.65}
           gradientStartColor={Colors._667D4C}
           gradientEndColor={Colors._9DAF89}
           gradientStart={{ x: 0, y: 0 }}
@@ -759,7 +754,7 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(6),
   },
   mealBox: {
-    width: width * 0.24,
+    width: layoutWidth * 0.24,
     minHeight: moderateScale(38),
     borderRadius: moderateScale(4),
     borderWidth: moderateScale(1),

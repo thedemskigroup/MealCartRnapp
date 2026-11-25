@@ -7,11 +7,7 @@ import {
 } from "@/assets/images";
 import BaseButton from "@/components/BaseButton";
 import { KeyboardAwareScrollView } from "@/components/KeyboardAwareScrollView";
-import {
-  horizontalScale,
-  moderateScale,
-  verticalScale,
-} from "@/constants/Constants";
+import { horizontalScale, layoutWidth, moderateScale, verticalScale } from "@/constants/Constants";
 import { Strings } from "@/constants/Strings";
 import { Colors, FontFamilies } from "@/constants/Theme";
 import {
@@ -403,7 +399,7 @@ export default function MealPlanSettings({ navigation }: { navigation: any }) {
                 title={Strings.mealPlanSettings_save}
                 gradientButton={true}
                 textStyle={styles.savePreference}
-                width={width * 0.92}
+                width={layoutWidth * 0.92}
                 onPress={handleSaveAll}
                 loading={isSaving}
                 disabled={isSaving}

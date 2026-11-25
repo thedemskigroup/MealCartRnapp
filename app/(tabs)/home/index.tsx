@@ -1,8 +1,4 @@
-import {
-  horizontalScale,
-  moderateScale,
-  verticalScale,
-} from "@/constants/Constants";
+import { horizontalScale, layoutWidth, moderateScale, verticalScale } from "@/constants/Constants";
 import { Colors, FontFamilies } from "@/constants/Theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef, useState } from "react";
@@ -652,7 +648,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderRadius: moderateScale(16),
     marginRight: moderateScale(16),
-    width: width * 0.75,
+    width: layoutWidth * 0.75,
     elevation: 3,
     shadowColor: Colors.black,
     shadowOpacity: 0.1,
@@ -795,7 +791,7 @@ const styles = StyleSheet.create({
   myMeals: {
     backgroundColor: Colors._F5F9FB,
     borderRadius: moderateScale(8),
-    width: width * 0.41,
+    width: layoutWidth * 0.41,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",

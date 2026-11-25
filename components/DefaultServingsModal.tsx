@@ -1,8 +1,4 @@
-import {
-    horizontalScale,
-    moderateScale,
-    verticalScale,
-} from "@/constants/Constants";
+import { horizontalScale, layoutWidth, moderateScale, verticalScale } from "@/constants/Constants";
 import { Strings } from "@/constants/Strings";
 import { Colors, FontFamilies } from "@/constants/Theme";
 import { useEffect, useState } from "react";
@@ -98,7 +94,7 @@ const DefaultServingsModal: React.FC<DefaultServingsModalProps> = ({
               title={Strings.defaultServings_cancel}
               gradientButton={false}
               textColor={Colors.background}
-              width={width * 0.35}
+              width={layoutWidth * 0.35}
               textStyle={styles.cancelButton}
               textStyleText={styles.cancelButtonText}
               onPress={onClose}
@@ -111,7 +107,7 @@ const DefaultServingsModal: React.FC<DefaultServingsModalProps> = ({
               }
               gradientButton={true}
               textColor={Colors.background}
-              width={width * 0.35}
+              width={layoutWidth * 0.35}
               disabled={isSaving}
               textStyle={
                 isSaving ? styles.confirmButtonDisabled : styles.confirmButton

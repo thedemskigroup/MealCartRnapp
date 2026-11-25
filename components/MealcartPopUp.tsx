@@ -1,4 +1,4 @@
-import { moderateScale, verticalScale } from "@/constants/Constants";
+import { layoutWidth, moderateScale, verticalScale } from "@/constants/Constants";
 import { Colors } from "@/constants/Theme";
 import { FontFamily } from "@/utils/Fonts";
 import { LinearGradient } from "expo-linear-gradient";
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   container: {
-    width: width * 0.85,
+    width: layoutWidth * 0.85,
     padding: verticalScale(15),
     backgroundColor: Colors.white,
     borderRadius: verticalScale(16),
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
 
-    width: width * 0.34,
+    width: layoutWidth * 0.34,
   },
   content: {
     minHeight: verticalScale(60),

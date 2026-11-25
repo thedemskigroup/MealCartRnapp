@@ -1,5 +1,5 @@
 import { APP_ROUTES } from "@/constants/AppRoutes";
-import { moderateScale, verticalScale } from "@/constants/Constants";
+import { layoutWidth, moderateScale, verticalScale } from "@/constants/Constants";
 import { Colors } from "@/constants/Theme";
 import { useTourStep } from "@/context/TourStepContext";
 import { FontFamily } from "@/utils/Fonts";
@@ -581,7 +581,7 @@ const TourTooltip: React.FC<TooltipProps> = ({
 
 const styles = StyleSheet.create({
   tooltipContainer: {
-    width: Dimensions.get("window").width * 0.85,
+    width: layoutWidth * 0.85,
     padding: verticalScale(15),
     backgroundColor: Colors.white,
     borderRadius: verticalScale(16),
