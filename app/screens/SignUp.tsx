@@ -41,6 +41,7 @@ import {
 } from "@/viewmodels/SignupViewModel";
 import { Formik } from "formik";
 import { useRef, useState } from "react";
+import DismissKeyboard from "@/components/DismissKeyboard";
 
 const SignupScreen = () => {
   const signupViewModel = new SignupViewModel();
@@ -166,6 +167,7 @@ const SignupScreen = () => {
   };
 
   return (
+    <DismissKeyboard>
     <SafeAreaView
       style={styles.safeArea}
       edges={["top", "left", "right", "bottom"]}
@@ -330,6 +332,7 @@ const SignupScreen = () => {
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </DismissKeyboard>
   );
 };
 

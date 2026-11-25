@@ -27,6 +27,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DismissKeyboard from "@/components/DismissKeyboard";
 
 interface ResetScreenProps {
   navigation?: any;
@@ -73,6 +74,7 @@ const ResetPasswordScreen: React.FC<ResetScreenProps> = ({ navigation }) => {
   };
 
   return (
+    <DismissKeyboard>
     <SafeAreaView
       style={styles.container}
       edges={["top", "left", "right", "bottom"]}
@@ -156,6 +158,7 @@ const ResetPasswordScreen: React.FC<ResetScreenProps> = ({ navigation }) => {
         />
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </DismissKeyboard>
   );
 };
 

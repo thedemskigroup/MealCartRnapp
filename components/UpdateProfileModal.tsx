@@ -28,6 +28,7 @@ import { hideLoader, showLoader } from "./Loader";
 import SpaceBetweenButtons from "./SpaceBetweenButtons";
 import ThemeGradientButton from "./ThemeGradientButton";
 import ThemeNormalButton from "./ThemeNormalButton";
+import DismissKeyboard from "@/components/DismissKeyboard";
 
 type Props = {
   visible: boolean;
@@ -104,6 +105,7 @@ export default function UpdateProfileModal({
         <TouchableWithoutFeedback onPress={onClose}>
           <View style={StyleSheet.absoluteFillObject} />
         </TouchableWithoutFeedback>
+        <DismissKeyboard>
         <View style={styles.container}>
           <ImagePickerModal
             visible={showImagePickerModal}
@@ -252,6 +254,7 @@ export default function UpdateProfileModal({
             }
           />
         </View>
+        </DismissKeyboard>
       </View>
     </Modal>
   );

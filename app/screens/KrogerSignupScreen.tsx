@@ -31,6 +31,7 @@ import { Formik } from "formik";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DismissKeyboard from "@/components/DismissKeyboard";
 
 type KrogerLocationsResponse = {
   data?: any[];
@@ -307,6 +308,7 @@ const KrogerSignupScreen = () => {
       : Strings.connectTo;
 
   return (
+    <DismissKeyboard>
     <SafeAreaView
       style={styles.safeArea}
       edges={["top", "left", "right", "bottom"]}
@@ -400,6 +402,7 @@ const KrogerSignupScreen = () => {
         onSelect={handleStoreSelect}
       />
     </SafeAreaView>
+    </DismissKeyboard>
   );
 };
 

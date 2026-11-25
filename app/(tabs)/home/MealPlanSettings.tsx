@@ -31,6 +31,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DismissKeyboard from "@/components/DismissKeyboard";
 
 const { height } = Dimensions.get("window");
 const { width } = Dimensions.get("window");
@@ -279,6 +280,7 @@ export default function MealPlanSettings({ navigation }: { navigation: any }) {
   ];
 
   return (
+    <DismissKeyboard>
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -411,6 +413,7 @@ export default function MealPlanSettings({ navigation }: { navigation: any }) {
       </KeyboardAwareScrollView>
       )}
     </SafeAreaView>
+    </DismissKeyboard>
   );
 }
 

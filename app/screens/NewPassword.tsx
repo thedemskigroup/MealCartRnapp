@@ -25,6 +25,7 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DismissKeyboard from "@/components/DismissKeyboard";
 
 const NewPasswordScreen = () => {
   const handleBack = () => {
@@ -60,6 +61,7 @@ const NewPasswordScreen = () => {
   };
 
   return (
+    <DismissKeyboard>
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <BackButton onPress={handleBack} />
 
@@ -149,6 +151,7 @@ const NewPasswordScreen = () => {
         />
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </DismissKeyboard>
   );
 };
 

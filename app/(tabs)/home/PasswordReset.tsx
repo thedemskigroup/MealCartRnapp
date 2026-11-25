@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Dimensions, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DismissKeyboard from "@/components/DismissKeyboard";
 
 
 const { width } = Dimensions.get('window');
@@ -36,6 +37,7 @@ export default function PasswordReset({  }) {
         );
     };
     return (
+        <DismissKeyboard>
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
             <View style={styles.content}>
             <View style={styles.headerRow}>
@@ -87,6 +89,7 @@ export default function PasswordReset({  }) {
 
             </View>
         </SafeAreaView>
+        </DismissKeyboard>
 
     );
 }

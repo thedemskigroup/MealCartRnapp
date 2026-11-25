@@ -22,6 +22,7 @@ import {
   Dimensions,
   FlatList,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Modal,
   StyleSheet,
@@ -644,7 +645,10 @@ const AddItemToList = ({
           style={{ width: "100%", alignItems: "center" }}
         >
           <View style={styles.container}>
-            <TouchableWithoutFeedback onPress={() => {}}>
+            {/* This already existed to stop taps inside the sheet reaching the
+                backdrop (which closes the modal). Dismissing the keyboard is
+                the natural thing for it to do instead of nothing. */}
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View>
                 <Text style={styles.title}>
                   {from === CREATE_MEAL_PLAN

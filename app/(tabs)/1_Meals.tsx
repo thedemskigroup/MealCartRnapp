@@ -47,6 +47,7 @@ import {
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DismissKeyboard from "@/components/DismissKeyboard";
 const { height } = Dimensions.get("window");
 const { width } = Dimensions.get("window");
 const MealsScreen: React.FC = () => {
@@ -561,6 +562,7 @@ const MealsScreen: React.FC = () => {
     </Pressable>
   );
   return (
+    <DismissKeyboard>
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       {/* Measured here, not on the SafeAreaView: onLayout reports a view's own
           frame including its padding, so measuring the container would just
@@ -650,6 +652,10 @@ const MealsScreen: React.FC = () => {
 
         {!hasActiveFilters && isMyMeals ? (
           <ScrollView
+            // A ScrollView claims the touch, so taps in here never reach the
+            // DismissKeyboard wrapper on the root. "handled" lets an unhandled
+            // tap close the keyboard while buttons keep working.
+            keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             style={{ marginTop: verticalScale(10) }}
             onScroll={handleScrollViewScroll}
@@ -855,6 +861,7 @@ const MealsScreen: React.FC = () => {
         />
       </View>
     </SafeAreaView>
+    </DismissKeyboard>
   );
 };
 

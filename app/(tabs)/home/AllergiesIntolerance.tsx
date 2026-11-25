@@ -25,6 +25,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DismissKeyboard from "@/components/DismissKeyboard";
 
 export default function AllergiesIntolerance() {
   const router = useRouter();
@@ -108,6 +109,7 @@ export default function AllergiesIntolerance() {
   };
 
   return (
+    <DismissKeyboard>
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -174,6 +176,7 @@ export default function AllergiesIntolerance() {
         onPress={handleSave}
       />
     </SafeAreaView>
+    </DismissKeyboard>
   );
 }
 
