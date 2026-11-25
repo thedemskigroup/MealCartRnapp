@@ -43,6 +43,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -54,7 +55,33 @@ const MealsScreen: React.FC = () => {
   const searchInputRef = useRef<TextInput>(null);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const itemWidth = (width - horizontalScale(50)) / 2;
+  // Grid sizing, derived from the live window rather than a module-load
+  // snapshot, so it survives rotation and tablets.
+  //
+  // Columns were hardcoded to 2, which on a 1280dp tablet meant two cards over
+  // 500dp wide each. Instead keep the CARD a constant size and fit as many as
+  // the width allows -- the same "more content, not bigger content" rule the
+  // scaling helpers follow. MIN_CARD_WIDTH goes through horizontalScale, so it
+  // inherits the 1.3x cap and tablet cards grow a little rather than a lot.
+  //
+  // Every phone still gets 2 columns. Card width matches the old formula
+  // exactly at the 430pt design width ((430 - 34 - 16) / 2 = 190) and lands
+  // within a few dp elsewhere -- 172.3 vs 170 on an iPhone 12, 159.1 vs 155 at
+  // 360pt -- because the old formula scaled one combined `50` while this
+  // scales the outer padding and the gutter separately. Tablets get 4 columns
+  // of ~293dp, a rotated phone 4 of ~212dp.
+  const { width: windowWidth } = useWindowDimensions();
+  const MIN_CARD_WIDTH = horizontalScale(190);
+  const GRID_GUTTER = horizontalScale(16);
+  const GRID_OUTER = horizontalScale(34);
+  const numColumns = Math.max(
+    2,
+    Math.floor(
+      (windowWidth - GRID_OUTER + GRID_GUTTER) / (MIN_CARD_WIDTH + GRID_GUTTER),
+    ),
+  );
+  const itemWidth =
+    (windowWidth - GRID_OUTER - GRID_GUTTER * (numColumns - 1)) / numColumns;
 
   const [isMyMeals, setIsMyMeals] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -659,9 +686,14 @@ const MealsScreen: React.FC = () => {
                       data={normalMeals}
                       renderItem={renderMealCard}
                       keyExtractor={(item) => item.id}
-                      numColumns={2}
+                      key={`meals-${numColumns}`}
+                      numColumns={numColumns}
                       columnWrapperStyle={{
-                        justifyContent: "space-between",
+                        // flex-start + gap, not space-between: with more than
+                        // two columns a partial last row would otherwise be
+                        // flung to the edges.
+                        justifyContent: "flex-start",
+                        gap: GRID_GUTTER,
                         marginBottom: verticalScale(8),
                       }}
                       scrollEnabled={false}
@@ -732,9 +764,11 @@ const MealsScreen: React.FC = () => {
               data={displayMeals}
               renderItem={renderMealCard}
               keyExtractor={(item) => item.id}
-              numColumns={2}
+              key={`browse-${numColumns}`}
+              numColumns={numColumns}
               columnWrapperStyle={{
-                justifyContent: "space-between",
+                justifyContent: "flex-start",
+                gap: GRID_GUTTER,
                 marginBottom: verticalScale(8),
               }}
               contentContainerStyle={{ paddingBottom: 160 }}
