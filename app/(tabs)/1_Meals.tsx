@@ -70,18 +70,32 @@ const MealsScreen: React.FC = () => {
   // 360pt -- because the old formula scaled one combined `50` while this
   // scales the outer padding and the gutter separately. Tablets get 4 columns
   // of ~293dp, a rotated phone 4 of ~212dp.
+  // `gridWidth` is measured from the padded container rather than derived from
+  // the window, because deriving it means hardcoding this screen's chrome and
+  // getting that wrong overflows the row. A first attempt assumed 34 units of
+  // horizontal chrome when the real figure is 44 (paddingHorizontal 20 a side,
+  // plus the list's own marginHorizontal 2 a side). At two columns the error
+  // was invisible -- 34 + one 16 gutter happens to equal the 50 the old
+  // formula used -- but at four columns every row ran off the right edge and
+  // clipped the last card.
   const { width: windowWidth } = useWindowDimensions();
+  const [gridWidth, setGridWidth] = useState(0);
+
   const MIN_CARD_WIDTH = horizontalScale(190);
   const GRID_GUTTER = horizontalScale(16);
-  const GRID_OUTER = horizontalScale(34);
+  // Until onLayout fires, fall back to the window minus the known chrome.
+  const availableWidth =
+    (gridWidth || windowWidth - horizontalScale(40)) - horizontalScale(4);
+  // gridWidth is the content width inside the container's padding; the extra
+  // horizontalScale(4) accounts for the lists' own marginHorizontal: 2 a side.
   const numColumns = Math.max(
     2,
     Math.floor(
-      (windowWidth - GRID_OUTER + GRID_GUTTER) / (MIN_CARD_WIDTH + GRID_GUTTER),
+      (availableWidth + GRID_GUTTER) / (MIN_CARD_WIDTH + GRID_GUTTER),
     ),
   );
   const itemWidth =
-    (windowWidth - GRID_OUTER - GRID_GUTTER * (numColumns - 1)) / numColumns;
+    (availableWidth - GRID_GUTTER * (numColumns - 1)) / numColumns;
 
   const [isMyMeals, setIsMyMeals] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -548,7 +562,18 @@ const MealsScreen: React.FC = () => {
   );
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      <View style={{ flex: 1 }}>
+      {/* Measured here, not on the SafeAreaView: onLayout reports a view's own
+          frame including its padding, so measuring the container would just
+          hand back the window width again. This child sits inside
+          container's paddingHorizontal, so its width IS the content width the
+          grid rows get. */}
+      <View
+        style={{ flex: 1 }}
+        onLayout={({ nativeEvent }) => {
+          const w = nativeEvent.layout.width;
+          if (w > 0 && Math.abs(w - gridWidth) > 1) setGridWidth(w);
+        }}
+      >
         <View style={styles.topTextParent}>
           <View style={styles.parentMymeal}>
             <View>
@@ -652,7 +677,12 @@ const MealsScreen: React.FC = () => {
                       style={{
                         flexDirection: "row",
                         flexWrap: "wrap",
-                        justifyContent: "space-between",
+                        // flex-start + gap, matching the FlatList grids. This
+                        // row is hand-rolled rather than a FlatList, and with
+                        // space-between a partial row (2 recent meals in a
+                        // 4-column grid) was flung to the screen edges.
+                        justifyContent: "flex-start",
+                        gap: GRID_GUTTER,
                         marginBottom: verticalScale(8),
                       }}
                     >
@@ -662,7 +692,6 @@ const MealsScreen: React.FC = () => {
                           style={{
                             width: itemWidth,
                             marginBottom: verticalScale(8),
-                            marginHorizontal: horizontalScale(2),
                           }}
                         >
                           {renderMealCard({ item, index })}
