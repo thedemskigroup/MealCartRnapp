@@ -41,6 +41,7 @@
     "plugins": [
       "./plugins/withGoogleSignInIOS",
       "./plugins/withOptionalHardwareFeatures",
+      "./plugins/withReleaseMinification",
       "expo-router",
       [
         "expo-splash-screen",
