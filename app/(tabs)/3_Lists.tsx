@@ -44,21 +44,37 @@ const ListsScreen: React.FC = () => {
   const { shoppingLists, loading, fetchShoppingLists, deleteShoppingListData } =
     useShoppingListViewModel();
 
+  // Distinguishes "you have no lists" from "the fetch failed". Both used to
+  // render the same empty FlatList -- a blank screen with no explanation and
+  // no way to retry, because the error callback only hid the loader.
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+
+  const loadLists = () => {
+    if (!user?.id) return;
+    setLoadFailed(false);
+    showLoader();
+    fetchShoppingLists(
+      user.id,
+      () => {
+        hideLoader();
+        setHasLoaded(true);
+      },
+      () => {
+        hideLoader();
+        setHasLoaded(true);
+        setLoadFailed(true);
+      },
+      10,
+      null,
+    );
+  };
+
   useEffect(() => {
     if (user?.id && !shouldStartTour) {
-      showLoader();
-      fetchShoppingLists(
-        user.id,
-        (data) => {
-          hideLoader();
-        },
-        (error) => {
-          hideLoader();
-        },
-        10,
-        null,
-      );
+      loadLists();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   // Register callback to open CreateNewListBottomSheet during tour
@@ -187,6 +203,30 @@ const ListsScreen: React.FC = () => {
     );
   };
 
+  const renderEmptyState = () => {
+    // The global loader is already covering the screen on the first fetch, so
+    // don't flash an empty state underneath it.
+    if (!hasLoaded) return null;
+
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyTitle}>
+          {loadFailed ? Strings.lists_loadErrorTitle : Strings.lists_empty}
+        </Text>
+        <Text style={styles.emptyText}>
+          {loadFailed ? Strings.lists_loadError : Strings.lists_emptySubtitle}
+        </Text>
+        {loadFailed ? (
+          <ThemeNormalButton
+            title={Strings.lists_retry}
+            onPress={loadLists}
+            containerStyle={styles.retryButton}
+          />
+        ) : null}
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <View style={styles.parentMymeal}>
@@ -209,7 +249,12 @@ const ListsScreen: React.FC = () => {
         data={shoppingLists}
         keyExtractor={(item) => item.id}
         renderItem={renderShoppingList}
-        contentContainerStyle={{ paddingBottom: verticalScale(100) }}
+        contentContainerStyle={
+          shoppingLists?.length
+            ? { paddingBottom: verticalScale(100) }
+            : styles.emptyListContent
+        }
+        ListEmptyComponent={renderEmptyState}
       />
       <CreateNewListBottomSheet ref={createNewListRef} />
     </SafeAreaView>
@@ -237,6 +282,34 @@ const styles = StyleSheet.create({
     fontFamily: FontFamilies.ROBOTO_SEMI_BOLD,
     fontSize: moderateScale(21),
     color: Colors.primary,
+  },
+  emptyListContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: horizontalScale(24),
+    paddingBottom: verticalScale(80),
+  },
+  emptyTitle: {
+    fontFamily: FontFamilies.ROBOTO_SEMI_BOLD,
+    fontSize: moderateScale(18),
+    color: Colors.primary,
+    textAlign: "center",
+    marginBottom: verticalScale(8),
+  },
+  emptyText: {
+    fontFamily: FontFamilies.ROBOTO_REGULAR,
+    fontSize: moderateScale(14),
+    color: Colors.tertiary,
+    textAlign: "center",
+    lineHeight: moderateScale(20),
+  },
+  retryButton: {
+    marginTop: verticalScale(20),
+    paddingHorizontal: horizontalScale(28),
   },
   listItem: {
     flexDirection: "row",

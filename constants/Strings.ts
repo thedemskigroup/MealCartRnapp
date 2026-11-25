@@ -145,6 +145,13 @@ export const Strings = {
   lists_items: "items",
   lists_markDone: "Mark Done",
   lists_viewList: "View List",
+  lists_empty: "No shopping lists yet",
+  lists_emptySubtitle:
+    "Tap the + button above to build your first shopping list from a meal plan.",
+  lists_loadErrorTitle: "Couldn't load your lists",
+  lists_loadError:
+    "Something went wrong fetching your shopping lists. Check your connection and try again.",
+  lists_retry: "Try Again",
   plans_mealPlans: "Meal Plans",
   plans_started: "Started :",
   plans_created: "Created:",
