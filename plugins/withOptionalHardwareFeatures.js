@@ -21,7 +21,23 @@ const { withAndroidManifest } = require("@expo/config-plugins");
  * recreated by `expo prebuild`, so the change has to live here rather than in
  * AndroidManifest.xml to survive a rebuild and reach EAS.
  */
-const OPTIONAL_FEATURES = ["android.hardware.screen.portrait"];
+const OPTIONAL_FEATURES = [
+  // Implied by android:screenOrientation="portrait" (see above).
+  "android.hardware.screen.portrait",
+
+  // Implied REQUIRED by the CAMERA permission that expo-image-picker adds --
+  // `aapt2 dump badging` reports it as
+  //   uses-implied-feature: name='android.hardware.camera'
+  //   reason='requested android.permission.CAMERA permission'
+  // which filters out the same device classes the portrait feature did:
+  // camera-less tablets, desktop/ChromeOS and Android XR. The app only ever
+  // *offers* the camera -- picking an existing photo from the library is
+  // always available -- so a camera is genuinely optional and Play should not
+  // treat it as an install requirement. autofocus is listed for the same
+  // reason: it is implied alongside camera on some tool versions.
+  "android.hardware.camera",
+  "android.hardware.camera.autofocus",
+];
 
 const withOptionalHardwareFeatures = (config) =>
   withAndroidManifest(config, (config) => {
